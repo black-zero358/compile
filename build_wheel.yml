@@ -1,0 +1,46 @@
+name: Build asyncmy wheel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_wheel:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+
+    steps:
+    # Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up Python environment
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    # Install required dependencies for building the package
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools
+
+    # Build the .whl file
+    - name: Build wheel
+      run: |
+        pip wheel . --no-deps --wheel-dir dist/
+
+    # Upload the built wheels as artifacts
+    - name: Upload wheel artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: asyncmy-wheels
+        path: dist/*.whl
